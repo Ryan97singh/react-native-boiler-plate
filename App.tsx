@@ -1,117 +1,104 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
 import React from 'react';
-import type {PropsWithChildren} from 'react';
 import {
   SafeAreaView,
-  ScrollView,
   StatusBar,
   StyleSheet,
-  Text,
+  TextInput,
   useColorScheme,
-  View,
 } from 'react-native';
+import theme from '@/theme/theme';
+import { ThemeProvider } from '@shopify/restyle';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+import { Colors } from 'react-native/Libraries/NewAppScreen';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import AppWithContext from '@/app-with-context';
+import { Provider } from 'react-redux';
+import { persistor, store } from '@/store';
+import { PersistGate } from 'redux-persist/integration/react';
+import { useFlipper } from '@react-navigation/devtools';
+import { navigationRef } from '@/hooks/navigation';
+import { enableScreens } from 'react-native-screens';
+import { Text } from '@/components/restyle';
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
+(Text as any).defaultProps = {
+  ...((Text as any).defaultProps || {}),
+  allowFontScaling: false,
+};
 
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
+(TextInput as any).defaultProps = {
+  ...((TextInput as any).defaultProps || {}),
+  allowFontScaling: false,
+};
 
-function App(): React.JSX.Element {
+const disableLoggingItems = [
+  'VirtualizedLists should never be nested',
+  'Encountered two children',
+  '<html>',
+];
+
+const App = () => {
   const isDarkMode = useColorScheme() === 'dark';
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
 
+  if (__DEV__) {
+    import('./ReactotronConfig').then(() =>
+      console.log('Reactotron Configured'),
+    );
+
+    try {
+      const originalConsoleError = console.error;
+      console.error = (...args) => {
+        if (
+          args &&
+          args?.length &&
+          disableLoggingItems?.some(
+            v => args?.[0]?.includes && args?.[0]?.includes(v),
+          )
+        ) {
+          return;
+        }
+
+        try {
+          originalConsoleError(...args);
+        } catch (error) {}
+      };
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  useFlipper(navigationRef);
+  enableScreens(true);
+
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+    <GestureHandlerRootView style={styles.container}>
+      <ThemeProvider theme={theme}>
+        <Provider store={store}>
+          <PersistGate persistor={persistor}>
+            {/* <AuthProvider> */}
+            {/* <PortalProvider> */}
+            <SafeAreaView style={[backgroundStyle, { flex: 1 }]}>
+              <StatusBar
+                barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+                backgroundColor={backgroundStyle.backgroundColor}
+              />
+              <AppWithContext />
+            </SafeAreaView>
+            {/* </PortalProvider>
+               </AuthProvider> */}
+          </PersistGate>
+        </Provider>
+      </ThemeProvider>
+    </GestureHandlerRootView>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
+  container: {
+    flex: 1,
   },
 });
 
