@@ -1,7 +1,7 @@
 {
 	"name": "react-native-restyle-redux",
-	"version": "0.0.5",
-	"description": "React Native Template",
+	"version": "0.0.7",
+	"description": "React Native Restyle Redux Template",
 	"repository": "git@github.com:Ryan97singh/react-native-boiler-plate.git",
 	"author": "Ryan Singh <ryan97singh@gmail.com>",
 	"license": "MIT"
